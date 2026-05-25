@@ -55,7 +55,7 @@ class Config:
     model: str = "claude-opus-4-7"
     effort: str = "high"
     max_tokens: int = 16000
-    target_words: int = 1100
+    target_words: int = 1500
     tools: list[str] = field(default_factory=lambda: ["web_search", "web_fetch"])
     platform_name: str = "The Trading Desk"
 

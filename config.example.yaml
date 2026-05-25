@@ -35,7 +35,7 @@ dedup_days: 14              # don't re-cover a topic within this window
 model: "claude-opus-4-7"
 effort: "high"             # low | medium | high | max
 max_tokens: 16000
-target_words: 1100
+target_words: 1500
 tools:                      # server-side research tools
   - "web_search"
   - "web_fetch"
