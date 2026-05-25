@@ -1,0 +1,47 @@
+# StockScribe configuration. Every key is optional — omitted keys use the
+# built-in defaults. Pass with:  stockscribe run --config config.yaml
+
+# --- platform identity ---
+platform_name: "The Trading Desk"
+
+# --- discovery: where trending topics come from ---
+feeds:
+  - "https://feeds.content.dowjones.io/public/rss/mw_topstories"
+  - "https://feeds.content.dowjones.io/public/rss/mw_marketpulse"
+  - "https://www.cnbc.com/id/100003114/device/rss/rss.html"
+  - "https://www.cnbc.com/id/10000664/device/rss/rss.html"
+  - "https://finance.yahoo.com/news/rssindex"
+  - "https://www.investing.com/rss/news_25.rss"
+  - "https://seekingalpha.com/market_currents.xml"
+
+trend_seeds:
+  - "stock market"
+  - "stocks"
+  - "investing"
+  - "stock to buy"
+
+enable_google_trends: true
+lookback_hours: 48          # only consider headlines this fresh
+recency_half_life_hours: 24 # newer headlines weigh exponentially more
+trend_weight: 2.0           # how strongly a Google-Trends spike boosts a topic
+max_candidates: 40
+
+# --- selection ---
+num_articles: 3
+min_score: 0.0
+dedup_days: 14              # don't re-cover a topic within this window
+
+# --- generation (Claude API) ---
+model: "claude-opus-4-7"
+effort: "high"             # low | medium | high | max
+max_tokens: 16000
+target_words: 1100
+tools:                      # server-side research tools
+  - "web_search"
+  - "web_fetch"
+
+# --- output ---
+content_dir: "content"      # canonical Markdown store
+site_dir: "site"            # generated browsable HTML site
+state_file: ".stockscribe_state.json"
+build_site: true

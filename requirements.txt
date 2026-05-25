@@ -1,0 +1,5 @@
+anthropic>=0.40
+feedparser>=6.0
+pytrends>=4.9
+PyYAML>=6.0
+markdown>=3.5
