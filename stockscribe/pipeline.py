@@ -110,9 +110,14 @@ def run(
         return result
 
     if writer is None:
-        from .generation import ClaudeArticleWriter
+        if config.generator == "free":
+            from .generation_free import TemplateArticleWriter
 
-        writer = ClaudeArticleWriter(config)
+            writer = TemplateArticleWriter(config)
+        else:
+            from .generation import ClaudeArticleWriter
+
+            writer = ClaudeArticleWriter(config)
 
     for topic in selected:
         log.info("Generating article for: %s (score=%.3f)", topic.term, topic.score)

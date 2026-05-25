@@ -52,6 +52,7 @@ class Config:
     dedup_days: int = 14
 
     # --- generation ---
+    generator: str = "claude"   # "claude" (needs API key) | "free" (no-LLM news roundup)
     model: str = "claude-opus-4-7"
     effort: str = "high"
     max_tokens: int = 16000

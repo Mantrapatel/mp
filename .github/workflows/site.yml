@@ -35,17 +35,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e .
 
-      # Generate fresh, cited articles only on schedule / manual runs (not on
-      # push, to avoid a commit -> push -> run loop). No-ops without the key.
+      # Generate fresh articles on schedule / manual runs (not on push, to avoid
+      # a commit -> push -> run loop). Uses the Claude writer when ANTHROPIC_API_KEY
+      # is set; otherwise falls back to the FREE no-LLM news-roundup generator so
+      # the site keeps updating at zero cost.
       - name: Generate fresh articles
         if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           if [ -n "$ANTHROPIC_API_KEY" ]; then
-            stockscribe run --num 2 --no-site || echo "generation failed; deploying existing content"
+            echo "API key present -> Claude generation"
+            stockscribe run --num 3 --no-site || echo "claude generation failed; continuing"
           else
-            echo "ANTHROPIC_API_KEY not set; skipping generation, deploying existing content"
+            echo "No API key -> FREE no-LLM roundups"
+            stockscribe run --free --num 3 --no-site --no-trends || echo "free generation found nothing; continuing"
           fi
 
       - name: Commit any new articles

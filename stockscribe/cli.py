@@ -21,6 +21,8 @@ def _apply_overrides(config: Config, args: argparse.Namespace) -> Config:
         overrides["enable_google_trends"] = False
     if getattr(args, "no_site", False):
         overrides["build_site"] = False
+    if getattr(args, "free", False):
+        overrides["generator"] = "free"
     return config.merged(overrides) if overrides else config
 
 
@@ -96,6 +98,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_run.add_argument("-n", "--num", type=int, help="Number of articles to generate")
     p_run.add_argument("--output-dir", help="Directory for Markdown output")
     p_run.add_argument("--dry-run", action="store_true", help="Research + select only; no API calls")
+    p_run.add_argument("--free", action="store_true", help="Generate free no-LLM news roundups (no API key needed)")
     p_run.add_argument("--no-site", action="store_true", help="Do not rebuild the static site")
     p_run.set_defaults(func=cmd_run)
 
