@@ -1,0 +1,73 @@
+name: Build and deploy site
+
+on:
+  push:
+    branches:
+      - main
+      - claude/stock-article-generator-fSzdw
+  workflow_dispatch: {}        # lets you run it manually from the Actions tab
+  schedule:
+    - cron: "0 13 * * *"       # daily at 13:00 UTC (scheduled runs use the default branch)
+
+permissions:
+  contents: write              # commit auto-generated articles back to the repo
+  pages: write                 # deploy to GitHub Pages
+  id-token: write              # required by deploy-pages
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      # Generate fresh, cited articles only on schedule / manual runs (not on
+      # push, to avoid a commit -> push -> run loop). No-ops without the key.
+      - name: Generate fresh articles
+        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -n "$ANTHROPIC_API_KEY" ]; then
+            stockscribe run --num 2 --no-site || echo "generation failed; deploying existing content"
+          else
+            echo "ANTHROPIC_API_KEY not set; skipping generation, deploying existing content"
+          fi
+
+      - name: Commit any new articles
+        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+        run: |
+          git config user.name "stockscribe-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add content .stockscribe_state.json 2>/dev/null || git add content
+          git commit -m "Auto-generate articles ($(date -u +%F))" || echo "nothing new to commit"
+          git push || echo "nothing to push"
+
+      - name: Build static site
+        run: stockscribe build-site
+
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true       # auto-enable Pages (source = GitHub Actions) if permitted
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - id: deploy
+        uses: actions/deploy-pages@v4
