@@ -3,8 +3,7 @@ name: Build and deploy site
 on:
   push:
     branches:
-      - main
-      - claude/stock-article-generator-fSzdw
+      - claude/stock-article-generator-fSzdw   # the repo's default branch (Pages deploys from here)
   workflow_dispatch: {}        # lets you run it manually from the Actions tab
   schedule:
     - cron: "0 13 * * *"       # daily at 13:00 UTC (scheduled runs use the default branch)
